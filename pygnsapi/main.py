@@ -1,10 +1,12 @@
-import json
 import requests
-import re
+import json
 import yaml
 import pprint as pp
 
 class GNS3(object):
+    """
+    Primary API class for interfacing with GNS3/gns-server REST API.
+    """
 
     def __init__(self, host, port, username, password, version):
 
@@ -155,8 +157,6 @@ class GNS3(object):
 
     # def del_link(self):
 
-
-
 # symbols
 
     # def get_symbol(self, id):
@@ -199,21 +199,15 @@ class GNS3(object):
 
 if __name__ == '__main__':
 
-    gns_env = {'host': '10.128.16.130', 'port': 3080, 'username': 'acennami', 'password': 'blank', 'version': 'v2'}
+    gns_env = {'host': '10.128.16.130', 'port': 3080, 'username': 'username', 'password': 'password', 'version': 'v2'}
 
     gns = GNS3(**gns_env)
 
     projects = gns.get_projects()
     appliances = gns.get_appliances()
     pid = gns.get_project_id('lab-v1')
-    # print(pid)
-
 
     project_id = pid['project_id']
-    # node_1_id =
-
-    # print(appliances.text)
-    # print(pid['project_id'])
 
     project_nodes = gns.get_nodes(project_id)
     # pp.pprint(project_nodes)
