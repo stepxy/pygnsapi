@@ -2,10 +2,7 @@ import json
 import requests
 import re
 import yaml
-
-
-
-
+import pprint as pp
 
 class GNS3(object):
 
@@ -27,7 +24,6 @@ class GNS3(object):
         try:
             response = requests.get(url, verify=False)
             if response.status_code == 200:
-                print(response.status_code)
                 return response
         except:
             return 'Request failed'
@@ -45,7 +41,6 @@ class GNS3(object):
         try:
             response = requests.get(url, verify=False)
             if response.status_code == 200:
-                print(response.status_code)
                 return response.json()
         except:
             return 'Request failed'
@@ -66,7 +61,6 @@ class GNS3(object):
                 for project in response.json():
 
                     if project['name'] == name:
-                        print(project['project_id'])
                         return project
 
         except:
@@ -79,7 +73,10 @@ class GNS3(object):
 
 # nodes
 
-    # def get_node(self):
+    # def get_node_id(self):
+
+
+
     def get_nodes(self, project_id):
         """
         Get a list of nodes for a configured project_id.
@@ -87,12 +84,11 @@ class GNS3(object):
         :return: json list of nodes.
         """
 
-        url = '{baseurl}/{version}/appliances'.format(baseurl=self.baseurl, version=self.version)
+        url = '{baseurl}/{version}/projects/{project_id}/nodes'.format(baseurl=self.baseurl, version=self.version, project_id = project_id)
 
         try:
             response = requests.get(url, verify=False)
             if response.status_code == 200:
-                print(response.status_code)
                 return response.json()
         except:
             return 'Request failed'
@@ -115,7 +111,6 @@ class GNS3(object):
         try:
             response = requests.get(url, verify=False)
             if response.status_code == 200:
-                print(response.status_code)
                 return response.json()
         except:
             return 'Request failed'
@@ -153,7 +148,6 @@ class GNS3(object):
         try:
             response = requests.post(url, data=payload, verify=False)
             if response.status_code == 200:
-                print(response.status_code)
                 return response.json()
         except:
             return 'Request failed'
@@ -169,6 +163,40 @@ class GNS3(object):
     # def set_symbol(self, id):
 
 
+# utilities
+
+    def get_port_by_name(self, project, node, port):
+        """
+        Get port details for a specific node.
+
+        :param project: project_id
+        :param node: name (hostname) of the node to query
+        :param port: name (shortname) of the node to query
+        :return: dict({'node': node['name'], 'node_id': node['node_id'],
+                                   'adapter_number': port['adapter_number'], 'port_number': port['port_number'],
+                                   'port_name': port['name'], 'port_short_name': port['short_name']})
+        """
+        project_id = project
+        node_name = node
+        port_name = port
+
+        nodes = self.get_nodes(project_id)
+
+        #find the nodes in the list of nodes, then find the port in the list of ports - based on the port shortname.
+        for node in nodes:
+            if node['name'] == node_name:
+                for port in node['ports']:
+                    if port['short_name'] == port_name:
+                        portval = {'node': node['name'], 'node_id': node['node_id'],
+                                   'adapter_number': port['adapter_number'], 'port_number': port['port_number'],
+                                   'port_name': port['name'], 'port_short_name': port['short_name']}
+                        return portval
+            else:
+                print('Node not found!')
+                return None
+
+
+
 if __name__ == '__main__':
 
     gns_env = {'host': '10.128.16.130', 'port': 3080, 'username': 'acennami', 'password': 'blank', 'version': 'v2'}
@@ -178,10 +206,21 @@ if __name__ == '__main__':
     projects = gns.get_projects()
     appliances = gns.get_appliances()
     pid = gns.get_project_id('lab-v1')
+    # print(pid)
 
+
+    project_id = pid['project_id']
+    # node_1_id =
 
     # print(appliances.text)
-    print(pid['project_id'])
+    # print(pid['project_id'])
+
+    project_nodes = gns.get_nodes(project_id)
+    # pp.pprint(project_nodes)
+
+    port_a = gns.get_port_by_name(project_id, 'n9k-spine-1', 'e1/1')
+    print(port_a)
+
 
 
 
